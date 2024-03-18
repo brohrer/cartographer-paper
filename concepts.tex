@@ -1,256 +1,480 @@
 \section{Concepts and Related Work}
 \label{sec:background}
 
-\subsection{Feature Learning}
-\label{subsec:featurelearning}
+\subsection{Reinforcement Learning}
+\label{subsec:reinforcementlearning}
 
-Feature engineering is the practice of cleverly combining several features
-to get at information that none of them could provide on their own.
-For example, the $x$- and $y$-velocities of an object can be combined
-to give its overall speed, or specific
-patterns in a $3 \times 3$ collection of
-pixels can be used to detect edges.
-Feature learning, also known as \textbf{
-\href{https://en.wikipedia.org/w/index.php?title=Feature_engineering&section=3}
-{automated feature engineering}}, is when features are generated through
-heuristics or the result of algorithms.
-There are a collection of
-\href{https://en.wikipedia.org/w/index.php?title=Feature_engineering&section=5}
-{open source tools} for this, which largely
-focus on time series data sets.
+To set the stage, the Naive Cartographer falls into
+a category of machine learning
+called reinforcement learning (RL). An RL algorithm learns to take actions
+that lead to rewards and avoid actions that lead to bad experiences,
+much like a toddler learns to prefer cookies over brussel sprouts
+through trial and error. This is distinct from the other two main
+branches of machine learning: supervised learning, such as algorithms
+that learn to detect fraudulent charges on our credit cards,
+and unsupervised learning, such as might be used to group tracks
+into genres in a music catalog. The favored reference in the field by
+Sutton and Barto is freely available in
+\href{http://incompleteideas.net/book/RLbook2020.pdf}{pdf}
+.~\footnote{Sutton, R. S., and Barto, A. G. (2020) Reinforcement Learning:
+An Introduction, second edition, Westchester Publishing Service.
+http://incompleteideas.net/book/RLbook2020.pdf }
+I'll be mimicking their notation here.
 
-Feature learning is also referred to as \textbf{
-\href{https://en.wikipedia.org/wiki/Feature_learning}{representation learning}}.
-\textbf{\href
-{https://en.wikipedia.org/w/index.php?title=Feature_learning&section=6}
-{Principal components analysis}} (PCA) is the poster child for unsupervised
-representation learning. PCA resembles Ziptie in that it finds combinations
-of features that tend to co-occur. PCA is also different in a number
-ways; an important one is that 
-it is focused on dimensionality
-reduction. The goal of PCA is to reduce the total number of features used
-to a small set that distills out most of the information in the data.
+A single pass of an RL algorithm looks something like
+\begin{enumerate}
+  \item{See a cookie. (Sense the state of the world, $s$.)}
+  \item{Eat the cookie. (Take an action, $a$.)}
+  \item{Enjoy the cookie. (Experience a reward, $r$.)}
+\end{enumerate}
+The next pass may be ``See a brussel sprout, Eat the brussel sprout,
+Wrinkle nose at the brussel sprout experience." It will also have a
+state-action-reward ($s, a, r$) structure. The algorithm repeats
+the cycle of $s, a, r$ tuples until the end of time or until someone
+turns it off.
 
-\subsection{Sparse Coding}
-\label{subsec:sparsecoding}
+\subsection{Value function}
+\label{subsec:introvaluefunction}
+The thing that makes RL algorithms useful is that after a while they
+get good at choosing which action to take that will bring the most reward.
+After trying a cookie and a brussel sprout a couple of times,
+a clear pattern will emerge. Then, when presented with the state $s$ of
+``See a brussel sprout and a cookie" the algorithm will have the option
+of two actions: ``Eat the cookie" or ``Eat the brussel sprout."
+It will only need to reach back into its accumulated experience to know
+that eating the cookie will lead to higher (immediate) reward than eating
+the brussel sprout.
 
-Ziptie is an example of a specific variant of feature learning called
-\textbf{\href{https://en.wikipedia.org/wiki/Sparse_dictionary_learning}
-{sparse coding}} or \textbf{sparse dictionary learning}, a family of methods
-for learning concise ways to represent data. 
-
-The goal of sparse coding is to represent an observation
-using as few features as possible.
-To do this, sparse coding methods often learn an
-overcomplete dictionary of basis functions.
-(Extending the analogy of a dictionary of the English language,
-the basis functions are the words.
-Overcomplete means that
-there is more than one combination of words that express the same idea.
-Overcompleteness allows for sparse representation, because you
-can choose to express the idea using the representation
-with the fewest words.)
-
-A culinary example of sparse coding is ``Moose Tracks" flavor ice cream.
-It could just as accurately be described as ``vanilla with small
-peanut butter cups and fudge ripples". The name ``Moose Tracks" is
-superfluous; it means exactly the same thing.
-Its existence shows overcompleteness in the dictionary
-of ice cream flavor names. And it allows for a concise representation.
-
-Another example of sparse coding shows up in music. As seen in
-Figure~\ref{fig:chords}, combinations of several keys (features)
-can be represented as chords (basis functions). There are many more
-possible chords than keys. Moving to a chord representation does not
-make a shorter dictionary than working with keys directly. But what
-it buys us is the ability to represent a collection of several keys with
-a single composite feature instead of having to enumerate
-all the keys involved. 
-
-\begin{figure}[ht]
-\vskip 0.2in
-\begin{center}
-\centerline{\includegraphics[width=3.25in]{images/chords.png}}
-\caption{Piano chords as a sparse coding}
-\label{fig:chords}
-\end{center}
-\vskip -0.2in
-\end{figure}
-
-\subsection{$\ell^0$ vs $\ell^1$ Norms}
-\label{subsec:sparsenorms}
-
-In its purest form, the goal of sparseness is have as many features be
-zero as possible. An ideal sparse coding would be able to represent each
-set of inputs with exactly one feature. The number of non-zero features
-is also called the $\ell^0$ norm. An $\ell^0$ sparse coding will
-do it's best to represent each input with as few features as possible.
-
-Unfortunately, minimizing the $\ell^0$ norm for feature representation is hard.
-Our regular machine learning bag of tricks for optimizing things
-requires differentiability, and the $\ell^0$ norm is not differentiable. The
-count of non-zero features changes sharply by one, even if the feature
-value only changes from 0 to 0.001. And as that feature value changes from
-0.001 to 0.1 to 10, the $\ell^0$ norm doesn't change at all.
-
-As any self-respecting algorithm nerd will tell you, when presented
-with a problem you can't solve, just ignore it and solve a different one.
-In the hard problem of sparse coding, you can redefine ``sparse"
-to mean minimizing the $\ell^1$ norm,
-instead of the $\ell^0$ norm. Then it becomes differentiable, and can be
-solved with familiar tools, including backpropagation and neural networks.
-This is how the field of machine learning has handled it anyway.
-
-However, all hope is not lost for the $\ell^0$-sparse coding problem.
-There is a whole field of optimization
-for hard problems like this. (If you're trying to hire a person to do this
-their past job titles will probably sound more like
-Operations Research than
-Machine Learning.)
-A \href{https://hal.science/hal-01965904/document}{2018 paper}\footnote{
-Liu, Y., Canu, S., Honeine, P., Ruan., S. (2018)
-K-SVD with a real L0 optimization: application
-to image denoising.
-Proc. 28th IEEE workshop on Machine Learning for Signal Processing (MLSP),
-Aalborg, Denmark. pp.1 - 6.}
-described a method for $\ell^0$ sparse coding using
-one of these optimization methods (mixed integer quadratic programming).
-
-I applaud them for tackling the honest-to-goodness sparse coding problem.
-The only downside for practical use is that it is quite computationally
-expensive. The authors don't say exactly how expensive, but when
-they describe it as an ``Achilles' heel", that suggests the method is not quite
-ready for real time production applications.
-
-Another way to make sparse optimization easier to solve is to keep the
-$\ell^0$ norm, but to relax the minimization requirement. What if we had
-a method that wasn't perfect, but was pretty OK? What if it didn't necessarily
-find the way to use the absolute minimum number of features each time,
-but found a way to get kind of close? And what it it only took one-millionth
-of the computation? This describes the path of heuristic approximation,
-or to use less floofed-up language, a hack. This is the path that Ziptie
-follows, and the hack that Ziptie uses is
-agglomerative clustering.
-
-\subsection{Agglomerative Clustering}
-\label{subsec:agglomeration}
-
-This is a method of grouping observations or data points in which
-the most similar are grouped together right away, then the slightly less
-similar are added to those clusters. As clusters grow they can also glom on
-to each other. This process of similar observations and clusters
-repeatly combining to form larger clusters is
-\textbf{\href{
-https://en.wikipedia.org/w/index.php?title=Hierarchical_clustering&section=3
-}{agglomerative clustering}}.
-It's also called hierarchical clustering because when you trace the lineage
-of observations and mini-clusters combining, it forms a tree showing
-the hierarchy of similarity between them. 
-
-\subsection{Multi-membership Clustering}
-\label{subsec:multimembership}
-
-Ziptie is an unusual variant of agglomerative clustering where an item
-can belong to multiple clusters. Here the ziptie analogy of
-Figure~\ref{fig:multimember} can be helpful.
-In a set of wires, imagine pulling out five of them and wrapping them
-with one ziptie. Then imagine taking just two of those five, selecting another
-two loose wires, and wrapping those four with another ziptie.
-Two of the wires are included in both zipties. Those represent elements
-with multiple cluster membership.
-
-\begin{figure}[ht]
-\vskip 0.0in
-\begin{center}
-\centerline{\includegraphics[width=3.0in]{images/multimember.png}}
-\caption{Clustering with multiple membership.}
-\label{fig:multimember}
-\end{center}
-\vskip -0.2in
-\end{figure}
-
-On its surface,
-scikit-learn's
-\href{https://scikit-learn.org/stable/auto_examples/cluster/plot_digits_agglomeration.html#sphx-glr-auto-examples-cluster-plot-digits-agglomeration-py}
-{feature agglomeration}\footnote{
-Pedregosa, F., Varoquaux, G., Gramfort, A., Michel, V.,
-Thirion, B., Grisel, O., Blondel, M., Prettenhofer, P.,
-Weiss, R., Dubourg, V., Vanderplas, J., Passos, A.,
-Cournapeau, D., Brucher, M., Perrot, M., Duchesnay, E. (2011)
-Scikit-learn: Machine Learning in Python. Feature agglomeration.
-\textit{JMLR}, 12, 2825–2830.}
-is similar to Ziptie.
-It uses agglomerative clustering to group
-features into larger groups of features, but it is different in
-some important ways. Feature agglomeration doesn't allow for
-multiple membership, and its clustering criterion is based on
-correlations, rather than coactivations. (More about coactivation in
-Section~\ref{subsec:algocoactivation}.)
-
-Ziptie's bundling process is actually more similar to
-\textbf{
-\href{https://en.wikipedia.org/wiki/Byte_pair_encoding}
-{byte pair encoding}} (BPE),
-where frequently co-occurring characters get represented
-and replaced by a unique code
-of their own. The process is repeated until even long strings that
-occur often are represented by a single byte.
-The most important difference between Ziptie and BPE is that
-BPE operates on sequences of symbols (one-hot, binary categorical variables)
-and Ziptie extends the method to operate on sets of fuzzy variables.
-The other minor difference is that BPE designed to work with a fixed
-size batch of data. (There is some fun detail in
-\href{http://www.pennelynn.com/Documents/CUJ/HTML/94HTML/19940045.HTM}
-{the original writeup} from 1984.)
-
-\subsection{Continual Learning}
-\label{subsec:continual}
-
-Continual learning is a particular case of machine learning where the
-algorithm never stops evolving in response to its inputs,\footnote{
-Wang, L., Zhang, X., Su, H., and Zhu, J. (2015)
-A Comprehensive Survey of Continual Learning: Theory, Method and Application.
-arXiv.
-\href{https://arxiv.org/abs/2302.00487}{https://arxiv.org/abs/2302.00487}
-}
-also called incremental learning or lifelong learning.
-Ziptie is a specific flavor of continual learning called
-\textbf{\href{https://en.wikipedia.org/wiki/Online_machine_learning}{online learning}}
-where the algorithm does a small update after every new data point is collected.
-Ziptie also falls into the niche category of \textit{unsupervised}
-continual learning like this\footnote{
-Ashfahani, A. and Pratama, M. (2021).
-Unsupervised Continual Learning in Streaming Environments. arXiv.
-\href{https://arxiv.org/pdf/2109.09282.pdf}{https://arxiv.org/pdf/2109.09282.pdf}
-}
-and this\footnote{
-Rao, D., Visin, F., Rusu, A. A., Teh, Y. W., Pascanu, R., and Hadsell, R.
-(2019) Continual Unsupervised Representation Learning.
-Paper presented at 33rd Conference on Neural Information Processing Systems
-(NeurIPS 2019), Vancouver, Canada.
-\href{https://proceedings.neurips.cc/paper_files/paper/2019/file/861578d797aeb0634f77aff3f488cca2-Paper.pdf}
-{https://proceedings.neurips.cc/paper\_files/paper/2019/file/ 861578d797aeb0634f77aff3f488cca2-Paper.pdf}
-}
-because it isn't learning how to perform a specific task, but instead is
-learning how to organize and represent its data. 
+The way this accumulated state-action-reward experience is represented
+is a value function. For every possible state, and for every possible action
+in each of those states, the value function is the reward that is expected.
+It is typically written as $Q(s, a)$. Once a RL algorithm has learned the
+value function well, it can always make the choice that leads
+to the highest reward. It need never eat another brussel sprout again.
 
 
-Taken all together, Ziptie sits at the intersection 
-of several families of methods, as in Figure~\ref{fig:venn}.
+\subsection{Tabular RL}
+\label{subsec:introtabular}
 
-\begin{figure}[ht]
-\vskip 0.2in
-\begin{center}
-\centerline{\includegraphics[width=3.0in]{images/ziptie_venn.png}}
-\caption{Ziptie at the crossroads.}
-\label{fig:venn}
-\end{center}
-\vskip -0.2in
-\end{figure}
-
+An important distinction among RL algorithms is whether they require their
+states and actions to be \textbf{discrete} (that is, you could write
+them out in a list if you wanted to) or whether they can handle
+\textbf{continuous}. The cookie/brussel sprout example is discrete.
+It's easy to list out all possible states
 \begin{itemize}
-\item{$\ell^0$ Sparse Coding}
-\item{Agglomerative Clustering}
-\item{Multi-member Clustering}
-\item{Online Learning}
+  \item{See cookie}
+  \item{See brussel sprout}
+  \item{See both}
+  \item{See neither}
 \end{itemize}
+and all possible actions
+\begin{itemize}
+  \item{Eat cookie}
+  \item{Eat brussel sprout}
+  \item{Eat both}
+  \item{Eat neither}
+\end{itemize}
+Not all actions are possible in all states. You can't eat a cookie
+if you can't see a cookie. That's OK.
+
+Chess is another example of an environment with listable states
+(a discrete state space, $\mathcal{S}$) and listable actions
+(a discrete action space, $\mathcal{A}$). It's true that the lists
+of possible states and actions are very long, but if you were sufficiently
+determined you could count them. They don't go on forever.
+
+Physical robots are often examples of continuous state and action spaces.
+The possible angles of a robot elbow can't be listed without cheating and
+grouping them together into bins. The amount of torque applied to a robot
+elbow is similarly impossible to list. For any two listed torques,
+I can always find another torque that sits between them.
+
+Discrete state and action spaces are interesting because they allow you to
+(in theory) capture the value function $Q(s, a)$ in a single big table.
+Each row is a state, each column is an action, and the value of each cell
+is the expected reward. RL algorithms that work with discrete state
+and action spaces are called \textbf{tabular}, because they can represent
+their value function in a table, as in Table~\ref{tab:cookievaluefcn}.
+
+\begin{table*}[ht]
+\centering
+\begin{tabular}{c | c | c | c | c |}
+& Eat the cookie & Eat the brussel sprout & Eat both & Eat neither \\
+\hline
+See a cookie & 1 & NA & NA & 0 \\
+\hline
+See a brussel sprout & NA & -1 & NA & 0 \\
+\hline
+See both & 1 & -1 & 0 (+1 and -1) & 0 \\
+\hline
+See neither & NA & NA & NA & 0 \\
+\hline
+\end{tabular}
+\caption{Value function for the cookie/brussel sprout world}
+\label{tab:cookievaluefcn}
+\end{table*}
+
+
+FNC is a tabular approach, so it does represent the world as discrete.
+However it can also be used with continuous state spaces too thanks
+to the cheat of binning.
+
+\subsection{Exploration}
+\label{subsec:introexploration}
+
+When an RL algorithm first starts out, it doesn't have a good value function.
+That only happens through trial and error. After a short time, it learns
+some of the value function, enough to get by, but most of it is still unknown.
+You may have experienced this when choosing what to eat at a restaurant.
+
+In this scenario you are the RL algorithm also known as the
+\textbf{agent}---the entity responsible for deciding what to do next.
+Your current state $s$ is “staring at a menu”. Your function is to
+choose an item to order and eat. For instance, one of your potential
+actions, $a$, might be “cheeseburger”. Your action space $\mathcal{A}$
+consists of all the items on the menu. Your objective is to choose the most
+satisfying item, maximizing your reward $r$.
+
+If you’ve only tried three things on the menu so far, you're in a
+tricky place. Sure, the fish and chips was really good. That action had a
+high reward. But the next time you order, do you get the fish and chips again?
+Or branch out and try something new? Sticking with what you know is
+the safest course. It's also called \textbf{exploitation} in the sense of
+exploiting, or making the most of, your past experience. Trying something new,
+or \textbf{exploration}, is more of a gamble. It's possible that the
+shepherd's pie will be the best thing you've ever eaten but it might
+also be gross.
+
+Learning your favorite items on a menu is hard enough, but it's even
+harder when the world changes---when seasonal menu rotations kick in or
+there is a Portabella mushroom shortage or the management turns over and starts
+cutting costs. There is a real danger that the value function you
+learned becomes outdated and inaccurate. Your favorite dish might get
+pulled from the menu or re-imagined by an ambitious chef. A world that
+refuses to stay the same is considered \textbf{nonstationary} in RL terms,
+and dealing with nonstationary worlds is particularly challenging.
+Nonstationarity means that the need for exploration never goes away.
+Even after you've explored and learned your entire value function,
+you have to keep exploring in case it changes.
+
+Striking the balance between exploration and exploitation is a recurring
+theme in RL. The best trade-off depends entirely on the specifics of the
+world and the goals of the agent. One of the ways that high performing
+algorithms distinguish themselves is by cleverly juicing as much information
+as possible out of their explorations. 
+
+
+\subsection{Eligibility traces}
+\label{subsec:introeligibility}
+
+Yet another challenge to building a useful value function comes when there
+is some delay between taking an action and reaping the reward. Imagine a
+robot whose goal it is to open a door. A successful episode might require a
+whole sequence of (state, action) pairs before the goal is achieved.
+\begin{enumerate}
+  \item{(sitting in center of room, drive toward door)}
+  \item{(sitting in front of door, reach for handle)}
+  \item{(grasping handle, turn handle)}
+  \item{(grasping rotated handle, pull rotated handle)}
+\end{enumerate}
+Only at this point is the goal of an open door achieved (Yay!) and a reward
+is awarded. Now the question arises of how to allocate the reward.
+Certainly Step 4 deserves credit for the success and is assigned a high value,
+but Steps 1-3 were necessary preconditions for reaching Step 4, and so
+it stands to reason that they should be assigned some value too.
+The next time it is sitting in the center of the room, the robot should
+know that driving toward the door is a valuable course of action.
+To establish this pattern, some amount of value should be assigned to
+the Step 1 state-action pair as well.
+
+There are a variety of strategies for sharing credit across the
+state-action history, but conceptually most of them resemble a
+decaying allocation that gets smaller as it reaches further back in time.
+For example, the value of Step 4 might be allocated half of the reward,
+one quarter for Step 3, and one eighth each to Step 2 and Step 1.
+This sequence of weights
+$[\frac{1}{2},\frac{1}{4},\frac{1}{8}, \frac{1}{8}]$ is called an
+\textbf{eligibility trace} and specifies how to spread the reward
+backward in time to update the value of state-action pairs.
+RL algorithms differ in how they calculate eligibility traces, and how
+they update them when the same state-action pair is visited multiple times.
+
+\subsection{Model-based RL}
+\label{subsec:intromodelbased}
+
+Learning a value function for all possible state-action pairs can be an
+effective approach to solving a problem, but it's not the only way.
+It's analogous to blindfolding someone in the street and guiding them on
+their walk to the grocery store by calling out ``hotter" and ``colder" as
+they wander. The signal only helps them determine their next step.
+It doesn't convey how far away the store is, or whether there might
+be another path.
+
+Alternatively, we could just hand the person a map with ``X" marking the
+location of their destination and let them plot their own course.
+This is the concept behind model-based RL.
+
+Typically the RL agent doesn't have it quite this easy. It has to be
+its own cartographer, keeping track of its past experiences and stitching
+them together into a picture of the landscape. The person looking for the
+grocery store would note that, starting from the bookstore and going
+north lands them at the bank. Going east from there lands them at the
+coffee shop. And then going north again gets them to the grocery store.
+This can be represented as state-action-state transitions, $(s, a, s^\prime)$.
+\begin{enumerate}
+  \item{(bookstore, go north, bank)}
+  \item{(bank, go east, coffee shop)}
+  \item{(coffee shop, go north, grocery store)}
+\end{enumerate}
+After doing this for long enough, these transitions can be patched together
+to figure out where one would end up after taking any number
+of jumps in any direction.
+
+Because the real world is frightening and unpredictable, taking a particular
+action while in a particular state doesn't always produce the same result.
+When flipping a coin or buying a lottery scratcher or asking someone on
+a date, results can vary. This nuance can be represented mathematically by
+talking about the probability of landing in state $s^\prime$ when starting
+from state $s$ and taking action $a$: $p(s^\prime | s, a)$.
+In the coin flipping example,
+\begin{eqnarray*}
+p(\mbox{heads} | \mbox{have coin}, \mbox{do a flip}) &=& .5 \\
+p(\mbox{tails} | \mbox{have coin}, \mbox{do a flip}) &=& .5
+\end{eqnarray*}
+
+This is a collection of the probabilities of transitioning from one state
+to another, a state transition model. The combination of a state transition
+model and a value function is a
+\textbf{\href{https://en.m.wikipedia.org/wiki/Markov_decision_process}{Markov decision process}}.
+If you drop this name in casual conversation you can fool people into thinking
+you really know what you're talking about.
+
+If you feel inspired to do more reading on model-based RL,
+I recommend Chapter 8 of
+\href{http://incompleteideas.net/book/RLbook2020.pdf}{Sutton and Barto},
+which discusses the Dyna architecture, an early showcase of
+the power of the method.
+
+\subsection{Goal-conditioned RL}
+\label{subsec:introgoal}
+
+Working from a model opens up a whole new world of possibilities.
+Imagine that our grocery shopper, after making thousands of trips to
+the grocery store, decides one day to go to the pub. If the agent were
+relying on a value function they're hosed. All of their accumulated
+experience only tells them how close each location is to the grocery store
+and which actions are likely to get them closer. Nothing tells them
+how to get to a pub. Not only do they have to learn the value function
+for the pub but they also have to un-learn all of the values that
+would drive them toward the grocery store. They will not be getting
+that pint any time soon.
+
+But luckily our grocery shopper was a model-based agent.
+They recorded all their walks and wanderings and can search through
+their past experiences to learn that going west and south from the
+bookstore will get them to the pub. When the goal changed,
+they were able to adapt right away.
+
+Having a model enables an agent to do more than one task. If the door
+opening robot learned to do its job using only a value function,
+then it would truly be a single-purpose robot. However, if it were
+model-based then it could be quickly repurposed by giving it a new goal,
+say, of passing the butter at the dinner table. Its state transition
+model would allow it to chart a path from wherever it is in the
+state space (perhaps it starts out sitting at the center of the room again)
+to the end goal state of having the butter be in front of my plate
+at the table. There may be any number of intermediate steps,
+such as ``move to the table", ``grasp the butter dish",
+``move the butter dish near me", and ``release the butter dish",
+but the composite map of the state-action-state transitions
+in the model would make those steps knowable.
+
+Rewards are still valuable for elements that don't change.
+In human bodies, pain is a useful signal that something has damaged our
+hardware. Avoiding pain helps us avoid situations that might damage
+our hardware. Assigning a negative reward to pain, or the robot 
+equivalent, is a good measure to have in place. No matter what else
+it is doing, it serves a robot well to avoid overheating its motor coils
+or moving its limbs too quickly in an enclosed space.
+
+The process of using a transition model to plan a sequence of actions
+to reach a goal is prosaically known as planning and the portion of
+the RL agent that does this is called a \textbf{planner}.
+Notably, FNC does not contain a planner. It is a model
+and value function learner, but it relies on another component to do
+the planning and goal setting. The details for what a FNC-complementary
+planner needs to do, together with some examples, will be given in
+the Algorithm section to follow. 
+
+\subsection{Intermittent reward}
+\label{subsec:introintermittent}
+
+The default assumption of the reinforcement learning problem is that there is
+a reward signal available at every time step. Each pass through the sense-learn-act
+cycle the reinforcement learning agent has some basis for updating its
+value function. This is a reasonable assumption when reward is a function of
+sensor information. When a child eats an orange slice, the reward is sensed directly
+through hard-wired circuits in the brain.
+When a robot reaches its charging station, it can collect the reward that has
+been explicitly tied to getting recharged. When a child falls down the negative
+rewards of pain and frustration are associated with a host of physical experiences
+that it can sense directly. When a robot has a negative reward associated with
+exceeding an electrical current limit, it can be confident that it will never
+miss that punitive reward signal. In all of these cases, the reward
+is a direct consequence of sensed values.
+
+There are many reinforcement learning problems where the reward only occurs
+occasionally. For instance, an agent playing tic-tac-toe or solving maze often
+won’t know how well it’s doing until the very end. These types of environments are
+said to have a \textbf{sparse reward}, and there are clever approaches to making the
+most of these. But even in cases of sparse reward, the channel is always active.
+The agent can operate with confidence that every tic-tac-toe win or loss will
+come through as a positive or negative reward.  It will never have to wonder how it
+did on a given game.
+
+There is an alternative formulation for the reinforcement learning problem where
+reward is \textbf{intermittent}. Sometimes the reward signal is present, in which case
+it may be positive or negative or zero. But other times the reward signal is
+simply absent, and there is no information available about how well the agent is doing.
+This is a reasonable way to represent reinforcement that comes from human trainers.
+If there is a human in the loop providing feedback on whether a robot gripper
+is grasping a part correctly, they can provide explicit reward signals for ``do it
+more like that" (reward of +1), ``do it less like that" (reward of -1), or even
+``meh" (reward of 0). But if they step away from their station and the robot
+is running autonomously, it doesn’t make sense for it to assume that it’s
+receiving a reward of zero for every action from the absent human. Rather, it makes
+more sense to recognize that the signal is temporarily missing, and not to perform
+any additional updates on the reward estimates until that changes. This allows past
+human training to persist, rather than rapidly decay with the passage of time.
+It makes efficient use of human supervision, that sparsest of resources.
+
+One way to characterize this difference is \textbf{internal} versus \textbf{external} rewards.
+(The distinction isn't quite the same as intrinsic versus extrinsic rewards, but close enough.)
+Internal rewards can be anything that is a direct function of sensor information.
+A reward for reaching a battery charger or getting a grasp on an object or
+moving solar cells into a sunbeam. There can also be a cost, a small negative reward
+or gentle punishment, for high motor currents or excesively fast actions or
+bumping into things.
+
+An external reward would be something that is not directly a function of
+sensors---a signal provided by a human, some external process, or agent,
+or even some odd state
+that the robot can’t sense directly. External rewards can easily be intermittent,
+and in many cases it may be useful to assume a default of no reward information,
+rather than a reward of zero as is customary.
+
+
+\subsection{Naive Bayes}
+\label{subsec:intronaivebayes}
+
+There's a famous gotcha in tabular RL, the ominously named
+Curse of Dimensionality. It comes from the fact that the state of
+an agent in their environment includes all of the sensor information
+and everything that's known about both. On a chess board if you move
+one pawn, it's in an entirely new state. If a robot moves one finger,
+it's in a new state. If you change one pixel in the camera of a
+computer vision agent, it's a new state. The list of states becomes
+unfathomably long for all but very simple environments.
+
+The most common way to handle this is with some type of approximation
+where the agent extends what it learns about one state to similar states,
+and doesn't have to experience every individual variation.
+It's a form of generalization. It works well for a lot of applications.
+If you've watched simulated two-legged robots wobble around,
+you've seen it at work.
+
+There's another alternative that I haven't seen anyone try yet,
+which is to handle each of the features separately, instead of combinatorially.
+It changes the notion of state. If a robot twitches a finger, almost every
+other aspect of it is still considered to be in the same state.
+Only the new finger position is a change in state. The whole representation
+of state is broken up into independent components which are assumed
+not to interact with each other.
+
+Another term for this is ``conditionally independent features," and it is
+the assumption behind
+\textbf{\href{https://en.wikipedia.org/wiki/Naive_Bayes_classifier}{Naive Bayes}}
+methods. (Confusingly, this has little to do with Bayesian inference or
+Bayes Law.) It is naive in the sense that, yes of course we know that
+states aren't independent. 70 degrees west longitude is a very different
+experience if you're at 20 degrees north latitude or 70. But we are going
+to pretend that they are independent because it's convenient to do so.
+
+This approach can also be imagined as a whole bunch of tiny, dumb models,
+each based on only one feature. In machine learning a collection of models
+like this is called an \textbf{ensemble}, and ensembles have proven to be
+remarkably effective. Even though each individual model is only partly right,
+or only right part of the time, when aggregated together they do a good
+job steering the ship in the right direction. It's a metaphor
+for a healthy democracy.
+
+For this to work well, features have to contain important information
+individually, rather than in combination. One way this can break is when
+individual features are too narrow. For instance, when describing the
+position of a piece on a chessboard it would be reasonable to have one set
+of features for the rows 1 through 8 another set of features for representing
+the columns a through h. This representation is concise, just 16 features,
+but it puts the model at a disadvantage. Trying to reason about a knight
+in row 3 without also knowing what column it's in doesn't make much sense.
+The answer would be very different depending on whether the knight is in
+column b or column e. A better set of features would be the combination
+of all rows and columns, a1 through h8. It results in more features,
+64 instead of 16, but each one is much more informative.
+
+It's tough to strike the right balance between making features informative
+and keeping them down to a manageable number. Individual letters aren't
+very informative, but when they are grouped into words they start to
+have some interesting semantic content. However there are far more
+words than letters. Individual pixels don't help discern the content of
+an image, but once they are combined into edges and textures
+they start to give clues as to what's going on. However there are many
+more ways that pixels can be combine than there are individual pixels.
+Choosing good features is an art and requires thinking carefully about
+what each one means, especially how it might be useful to the agent trying
+to navigate its world. This is the case in all machine learning work,
+but especially so for a Naive Bayes approach.
+
+The particular problem of learning interesting features from low level
+sensor data is partially addressed by the
+\href{https://brandonrohrer.com/ziptie}{Ziptie} feature learner. Although
+FNC can work well on its own, it is designed to pair well with Ziptie
+to remove some of the manual crafting of features.
+
+\subsection{Fuzzy variables}
+\label{introfuzzy}
+In tabular RL, each state and action is categorical, meaning that
+it is discrete, distinct from the others. A chess piece is on
+square d6 or it is not. A switch if flipped or it is not. Zero or one.
+True or False. Tabular RL can still be used with continuous states,
+but the states have to be binned first. Test scores that can fall
+anywhere between 0 and 100 would have to be grouped, say into tests
+with scores between 90-100, 80-90, 70-80, etc. Then each bin could
+represent a different state.
+
+FNC requires categorical state variables too, but with a twist;
+it allows them to take on any value between zero and one.
+For example, the robot might have a state variable of ``obstacle nearness",
+derived from a proximity sensor. A zero might mean there was no obstacle
+within the range of the sensor, and a one might mean that there was
+an obstacle almost touching the robot. A .5 might mean that the obstacle was
+in the middle distance. A .2 might mean that the obstacle was fairly close.
+
+The technical term for variables that represent a single category and
+can vary between 0 and 1 is \textbf{fuzzy}. A more detailed description
+with examples can be found in Section 2
+of \href{https://brandonrohrer.com/ziptie}{the Ziptie paper}.
+
+
+
+%Figure~\ref{fig:chords}, combinations of several keys (features)
+
+%\begin{figure}[ht]
+%\vskip 0.2in
+%\begin{center}
+%\centerline{\includegraphics[width=3.25in]{images/chords.png}}
+%\caption{Piano chords as a sparse coding}
+%\label{fig:chords}
+%\end{center}
+%\vskip -0.2in
+%\end{figure}
+

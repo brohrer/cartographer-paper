@@ -1,5 +1,102 @@
 \label{sec:intro}
 
-\textbf{tl;dr: Naive Bayes Markov Decision Process}
+\textbf{tl;dr: A naive Bayes algorithm for learning Markov decision processes
+with fuzzy state}
 
+Fuzzy Naive Cartographer (FNC) is an online algorithm for
+model-based reinforcement learning (RL), specificially it learns 
+a Markov decision process and an action-value function.
 
+FNC assumes a fuzzy state vector, namely
+\begin{equation}
+\mathcal{S} = [s_0, s_1, s_2, \cdots, s_i, \cdots, s_n] \mbox{ where } s_i \in [0, 1] 
+\end{equation}
+and makes the unusual implementation decision of
+treating all elements of the state vector as conditionally independent, as in
+Naive Bayes classification algorithms.
+
+In FNC all actions are discrete.
+\begin{equation}
+\mathcal{A} = [a_0, a_1, a_2, \cdots, a_j, \cdots, a_m] \mbox{ where } a_j \in \{0, 1\} 
+\end{equation}
+FNC has two internal actions as well, a ``do-nothing" action as $a_{m+1}$ and
+an ``average" action as $a_{m+2}$. The do-nothing action explicity represents 
+refraining from taking an action, and the average action is always 1. It
+allows FNC to learn typical feature-outcome patterns that may be independent
+of agent actions.
+
+Rewards are real valued, but FNC also allows them to be absent, and it
+allows for multiple reward channels. 
+\begin{equation}
+\mathcal{R} = [r_0, r_1, r_2, \cdots, r_k, \cdots, r_l] \mbox{ where } r_k \in \{\mathbb{R}, \emptyset\}
+\end{equation}
+
+At each time step, $t$, an agent receives a state $s$ and reward $r$
+and takes a set of actions $a$. The state from the following iteration is
+represented as $s^{\prime}$ to show that it is the
+outcome of previous state and actions.
+FNC operates on a historical trace of prior states $\overline{s}$ where
+\begin{equation}
+\overline{s}_{i, t} = \max(s_{i, t}, \gamma_f \overline{s}_{i, t-1})
+\end{equation}
+In this recursive calculation $\gamma_f \in [0, 1]$ is a discount factor determining
+how quickly the influence of prior states decays.
+
+FNC also operates on a historical trace of state-action pairs,
+$(\overline{\overline{s}, a})$, where
+\begin{equation}
+(\overline{\overline{s_i}, a_j})_t = \max(
+(\overline{s_i}, a_j)_t , 
+\gamma_r (\overline{\overline{s_i}, a_j})_{t-1})
+\end{equation}
+Again here $\gamma_r$ is a discount factor, and may be different than
+$\gamma_f$. The activity of a state action pair is the product of the
+individual activities of the feature and the action.
+\begin{equation}
+(\overline{s_i}, a_j) = \overline{s_i} a_j
+\end{equation}
+
+Transition probabilities are defined in terms of the all-time
+sums of the transition
+occurrences and the feature-action trace activities.
+\begin{equation}
+p(s^\prime_k | (\overline{\overline{s_i}, a_j}) = \frac
+{\sum_t (\overline{\overline{s_i}, a_j}, s^\prime_k)_t}
+{\sum_t (\overline{\overline{s_i}, a_j})_t + 1}
+\end{equation}
+
+Conditional transition probabilities at each time step are aggregated
+over all active features with a weighted $\max()$ operation.
+\begin{equation}
+p(s^\prime_k | a_j) = \max_i (\overline{s_i} \mbox{ }
+p(s^\prime_k | (\overline{\overline{s_i}, a_j}))
+\end{equation}
+
+FNC also generates an uncertainty estimate associated with each feature-action
+pair.
+\begin{equation}
+\delta_{ij} = \frac{1}{\sum_t(\overline{\overline{s_i}, a_j}) + 1}
+\end{equation}
+
+The conditional uncertainty is aggregated in the same manner as transition
+probabilities.
+\begin{equation}
+\delta_j = \max_i (\overline{s_i} \mbox{ } \delta_{ij})
+\end{equation}
+
+The estimate for reward $r_k$ and feature-action pair
+$(\overline{\overline{s_i}, a_j})$
+at time $t$ is $\hat{r}_{ijk, t}$ and is calculated incrementally via this
+update rule
+\begin{equation}
+\hat{r}_{ijk, t} = \hat{r}_{ijk, t-1} + \alpha
+(\overline{\overline{s_i}, a_j})_t
+(r_{k,t} - \hat{r}_{ijk, t-1})
+\end{equation}
+where $\alpha \in [0, 1]$ is a learning rate.
+
+The conditional reward for each action $a_j$
+\begin{equation}
+\hat{r}_{j} = \sum_k \left ( \frac{\sum_i \hat{r}_{ijk} \overline{s_i}}
+{\sum_i \overline{s_i}} \right )
+\end{equation}

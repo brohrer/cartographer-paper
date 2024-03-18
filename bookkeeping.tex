@@ -1,19 +1,19 @@
 \section{Bookkeeping}
 \label{sec:bookkeeping}
 
-\subsection{Canopy code}
+\subsection{Naive Cartographer code}
 \label{subsec:code}
 
-The Ziptie Python package is hosted
+The Naive Cartographer Python package is hosted
 \href{
-https://codeberg.org/brohrer/ziptie
+https://codeberg.org/brohrer/cartographer
 }{in a Codeberg repository}
 with mirrors
 \href{
-https://gitlab.com/brohrer/ziptie
+https://gitlab.com/brohrer/cartographer
 }{on GitLab} and
 \href{
-https://github.com/brohrer/ziptie
+https://github.com/brohrer/cartographer
 }{GitHub}.
 
 The README of the repo has instructions for installation and
@@ -23,16 +23,16 @@ examples of how to integrate it into your project.
 \label{subsec:versions}
 
 The \textbf{\href{
-https://codeberg.org/brohrer/ziptie-paper/src/branch/main/ziptie.pdf}
+https://codeberg.org/brohrer/cartographer-paper/src/branch/main/cartographer.pdf}
 {latest version}}
 of this document and all the files needed to
 render it are in \textbf{\href{
-https://codeberg.org/brohrer/ziptie-paper}
+https://codeberg.org/brohrer/cartographer-paper}
 {this Codeberg repository}}. There's a backup copy in \textbf{
-\href{https://github.com/brohrer/ziptie-paper}
-{this repository on GitHub}}.
+\href{https://github.com/brohrer/cartographer-paper}
+{this repository on GitHub}} and 
  \textbf{
-\href{https://gitlab.com/brohrer/ziptie-paper}
+\href{https://gitlab.com/brohrer/cartographer-paper}
 {this repository on GitLab}}.
 
 I don't expect this doc to ever be done. I'm always learning new things,
@@ -43,164 +43,42 @@ Since it's a git repository, you are free to browse past commits to watch
 the evolution, but I'll try to keep a running record of important updates
 here.
 
-\begin{itemize}
-\item{\textbf{\href{
-https://codeberg.org/brohrer/ziptie-paper/src/commit/758b34e0749b75f35c98818d11d41553a8828b48/ziptie.pdf}
-{December 2, 2023}}. Rough outline of how Ziptie works
-and how it's related to the rest of the algorithmic world.}
-\item{\textbf{\href{
-https://codeberg.org/brohrer/ziptie-paper/src/tag/2023-12-12/ziptie.pdf}
-{December 12, 2023}}. The first edition is complete enough that
-I felt OK about telling the world.}
-\item{\textbf{\href{
-https://codeberg.org/brohrer/ziptie-paper/src/tag/2023-12-17/ziptie.pdf}
-{December 17, 2023}}. Added a section on
-computational complexity and implementation considerations.}
-\end{itemize}
+% \begin{itemize}
+% \item{\textbf{\href{
+% https://codeberg.org/brohrer/ziptie-paper/src/commit/758b34e0749b75f35c98818d11d41553a8828b48/ziptie.pdf}
+% {December 2, 2023}}. Rough outline of how Ziptie works
+% and how it's related to the rest of the algorithmic world.}
+% \end{itemize}
 
-\subsection{History}
-\label{subsec:history}
+% \subsection{History}
+% \label{subsec:history}
 
-Ziptie didn't start life in its current form. It actually has a long
-and very boring history.
+% \begin{itemize}
 
-\begin{itemize}
-
-\item{\textbf{2011}. As the method was taking shape, I published a 
-flurry of posters and write-ups in small conferences: 
-\href{https://github.com/brohrer/publications/blob/main/Rohrer11BeccaFunctionalModel.pdf}
-{GCNC},\footnote{
-Rohrer, B., Morrow, J.D., Rothganger, F., Xavier, P. (2011)
-\textit{BECCA: A functional model of the human brain
-for arbitrary task learning}.
-Grand Challenges in Neural Computation 2011.
-}
-\href
-{https://github.com/brohrer/publications/blob/main/Rohrer11ImplementedArchitectureFeature.pdf}
-{AGI},\footnote{
-Rohrer, B. (2011) \textit{An implemented architecture for
-feature creation and general reinforcement learning}.
-Workshop on Self-Programming in AGI Systems, AGI 2011.
-}
-\href
-{https://github.com/brohrer/publications/blob/main/Rohrer11DevelopmentalAgentLearning.pdf}
-{ICDL/EpiRob},\footnote{
-Rohrer, B. (2011) \textit{A developmental agent for learning features,
-environment models, and general robotics tasks}. ICDL/Epirob 2011.
-}
-\href
-{https://github.com/brohrer/publications/blob/main/Rohrer11BiologicallyInspiredFeature.pdf}
-{BICA},\footnote{
-Rohrer, B. (2011) \textit{Biologically inspired feature creation
-for multi-sensory perception}. BICA 2011.}
-\href{https://github.com/brohrer/publications/blob/main/Rohrer12BeccaReintegratingAi.pdf}
-{AAAI Symposium on Designing Intelligent Robots}.\footnote{
-Rohrer, B. (2012) \textit{BECCA: Reintegrating AI for
-natural world interaction}. AAAI Spring Symposium on Designing
-Intelligent Robots: Reintegrating AI 2012.
-}
-Originally Ziptie was developed as part of a larger project,
-a cognitive architecture originally called the Brain Emulating
-Cognition and Control Architecture. It shows up in that context
-until it gets split out on its own later. The cognitive architecture
-undergoes a lot of evolution, and other components come and go, but
-Ziptie is the closest thing it has to a fixed point.
-}
-
-\item{\textbf{2012-01-14}.
-
-\href{
-https://github.com/brohrer/openBECCA/blob/3a9b3902eeb78c61585efa6860ef9862298f562f/labBECCA/grouper_initialize.m}
-{The oldest version}
-of the code I can find.
-At this point Ziptie was called Grouper
-and was written in MATLAB. A lot of details have changed since this point,
-but the acculumulation of coactivation as a clustering mechanism has not.
-\href{https://www.linkedin.com/in/mattchapmansoftwareengineer/}{Matt Chapman}
-was an early collaborator and helped me transition the code from the private
-research repo I'd been developing into something more public.
-}
-
-\item{\textbf{2012-02-20}.
-This is
-\href{https://github.com/alito/becca/commit/6eea91447608a1a6280ce915a26a18a85a57ef1c#diff-2106149c513c2a9fb07b17281f3830e992856b0c553b348f398b5d0fc3f96bc1}
-{the first incarnation} of the code in Python. It was written
-by
-\href{https://www.linkedin.com/in/alejandro-dubrovsky-90b9b833/}{Alejandro Dubrovsky}
-(GitHub user name \textit{alito}) who generously ported the MATLAB code
-to Python as part of an epic weekend grind fest.
-}
-
-\item{\textbf{2012-04-20}.
-I started using
-\href{https://github.com/alito/becca/commit/dae6fa355c6bdcf9b5e2863d3b93dafa4fc4d5be#diff-2106149c513c2a9fb07b17281f3830e992856b0c553b348f398b5d0fc3f96bc1}
-{the term ``coactivation"}
-in the code and documentation.
-}
-\item{\textbf{2012-06-26}.
-``Grouper" is renamed ``
-\href{https://github.com/alito/becca/commit/6e7f968f283e287917cbbc9520297b833ad5d3aa#diff-e521b0d7fc82aa487ff7542d8a2672c0074ee1ae38705a48676fbad625e39bed}
-{Perceiver}".
-}
-
-\item{\textbf{2012-06-26}.
-``Perceiver" is renamed ``
-\href{https://github.com/alito/becca/commit/dbb0374b164b6a5725b5bdf7d9eb208ddd82f855#diff-9338f7a12f369b96ae4414274afd08ce028c84758d252e683d937e6a56c48c9a}
-{Map}".
-}
-
-\item{\textbf{2013-05-09}.
-``Map" is renamed ``
-\href{https://github.com/alito/becca/blob/ba07dde43f5a24fb35c1eabcc756a2cdc799287d/src/scripts/agent/ziptie.py}
-{Ziptie}".
-}
-
-\item{\textbf{2015-01-13}.
-The home repository for the code is moved to
-\href{https://github.com/brohrer/robot-brain-project/blob/bc41b26373290acb6be0c9069be6ac6f3485b106/core/ziptie.py}
-{brohrer/robot-brain-project}.
-}
-
-\item{\textbf{2015-06-10}.
-\href{https://github.com/brohrer/robot-brain-project/commit/3815c5a10cf256e9f61eeec1a34f3b60f55d107f#diff-f47908520ba430339ff71c0fb1052bc986dafdd875ad83c9083ed4687f469945}
-{I started using Numba} to get everything to run faster.
-}
-
-\item{\textbf{2018-10-01}.
-This is
-\href{https://github.com/brohrer/robot-brain-project/blob/53e2b52ab10e4ed7f92b3d488c49a6138d29a878/becca/ziptie.py}
-{the last commit}
-in the GitHub robot-brain-project repository.
-}
-
-\item{\textbf{2018-11-08}.
-The
-\href{https://github.com/brohrer/ziptie}
-{Ziptie code} is split out into its own repository.
-}
-
-\end{itemize}
+% \item{\textbf{2011}. As the method was taking shape, I published a 
+% flurry of posters and write-ups in small conferences: 
+% \end{itemize}
 
 \subsection{Citations}
 \label{subsec:citations}
 
-If you end up using Ziptie in your work, give it a shout out.
+If you end up using Naive Cartographer in your work, give it a shout out.
 Here's an APA example you can copy and paste. (You may have to fiddle with
 the dates.)
 
-Rohrer, B. (2023). Ziptie: Learning Useful Features [White Paper].
+Rohrer, B. (2024). Naive Cartographer: A Reinforcement Learner [White Paper].
 Retrieved \today, from
-\href{https://brandonrohrer.com/ziptie}{https://brandonrohrer.com/ziptie}
+\href{https://brandonrohrer.com/cartographer}{https://brandonrohrer.com/cartographer}
 
 
 \subsection{Licensing}
 \label{subsec:license}
 
 The text, figures, equations, and methods described in this paper
-are published under the CC0 "No Rights Reserved" license.
+are published under the CC0 ``No Rights Reserved" license.
 From the
 \href{https://creativecommons.org/public-domain/cc0/}{Creative Commons} description,
-CC0 "enables scientists, educators,
+CC0 ``enables scientists, educators,
 artists and other creators and owners of copyright- or database-protected
 content to waive those interests in their works and thereby place them as
 completely as possible in the public domain, so that others may freely
@@ -223,5 +101,4 @@ I'm at brohrer@gmail.com. You're welcome to email me at any time for
 any reason. I don't guarantee I'll respond, but I try to.
 If you're so inclined, drop me a note.
 I love to hear about how
-Canopy is being used. It gives me ideas for how to make it better.
-And if you call out a typo you found in the paper, I'll be forever grateful.
+Naive Cartographer is being used.
