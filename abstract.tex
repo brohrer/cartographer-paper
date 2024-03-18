@@ -86,17 +86,17 @@ probabilities.
 
 The estimate for reward $r_k$ and feature-action pair
 $(\overline{\overline{s_i}, a_j})$
-at time $t$ is $\hat{r}_{ijk, t}$ and is calculated incrementally via this
+at time $t$ is $Q_{ijk, t}$ and is calculated incrementally via this
 update rule
 \begin{equation}
-\hat{r}_{ijk, t} = \hat{r}_{ijk, t-1} + \alpha
+Q_{ijk, t} = Q_{ijk, t-1} + \alpha
 (\overline{\overline{s_i}, a_j})_t
-(r_{k,t} - \hat{r}_{ijk, t-1})
+(r_{k,t} - Q_{ijk, t-1})
 \end{equation}
 where $\alpha \in [0, 1]$ is a learning rate.
 
-The conditional reward for each action $a_j$
+The conditional reward for each action $a_j$ is given by
 \begin{equation}
-\hat{r}_{j} = \sum_k \left ( \frac{\sum_i \hat{r}_{ijk} \overline{s_i}}
+Q_{j} = \sum_k \left ( \frac{\sum_i Q_{ijk} \overline{s_i}}
 {\sum_i \overline{s_i}} \right )
 \end{equation}

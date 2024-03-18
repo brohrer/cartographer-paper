@@ -1,7 +1,7 @@
 \section{Algorithm}
 
 
-The core of the Naive Cartographer is a Markov Decision Process model pair:
+The core of the Naive Cartographer is a Markov decision process model pair:
 
 A transition probability estimate and
 \begin{equation}
@@ -10,7 +10,7 @@ p(s^\prime | s, a)
 
 A reward estimate
 \begin{equation}
-r(s, a)
+Q(s, a)
 \end{equation}
 
 (following the notation of Sutton and Barto). If you already have a mental model
@@ -348,9 +348,9 @@ Equation 2.5 of \href{http://incompleteideas.net/book/RLbook2020.pdf}{Sutton and
 in the context of multi-armed bandits, a simple RL scenario.
 For a given feature-action pair
 \begin{equation}
-\hat{r}_t = \hat{r}_{t-1} + \alpha(r_t - \hat{r}_{t-1})
+Q_t = Q_{t-1} + \alpha(r_t - Q_{t-1})
 \end{equation}
-where is $\hat{r}_t$ is the expected value of reward for that
+where is $Q_t$ is the expected value of reward for that
 feature-action pair as of time $t$, $r_t$ is the observed value,
 and $\alpha$ is a constant learning rate between zero and one,
 usually much closer to zero than one.
@@ -365,16 +365,16 @@ converge on the true average value of $r$ (if the average value of $r$
 is constant) and will adapt
 to any changes in $r$ as well (if its average isn't constant).
 
-The expression above for updating $\hat{r}$ only applies when the feature-action
+The expression above for updating $Q$ only applies when the feature-action
 pair $ij$ is active, that is, when feature $i$ has occurred and action $j$ has been
 taken. In traditional tabular RL, this is an all-or-nothing proposition, but
 in FNC it can by fractionally valued.
 Here is the more complete
 and explicit version that includes the condensed feature-action history.
 \begin{equation}
-\hat{r}_{ij, t} = \hat{r}_{ij, t-1} + \alpha
+Q_{ij, t} = Q_{ij, t-1} + \alpha
 (\overline{\overline{s_i}, a_j})_t
-(r_t - \hat{r}_{ij, t-1})
+(r_t - Q_{ij, t-1})
 \end{equation}
 
 \subsection*{Quirk 9: Reward prediction}
@@ -399,11 +399,11 @@ estimates to be pulled out of the array, there are several. The way
 FNC handles this is to do a weighted average of all the rows, based on
 their corresponding feature activities. This ensures that rows associated
 with highly active features are counted strongly, and rows without 
-any significant activity are ignored. $\hat{r}_j$ is the predicted reward for
+any significant activity are ignored. $Q_j$ is the predicted reward for
 action $a_j$.
 
 \begin{equation}
-\hat{r}_{j} = \frac{\sum_i \hat{r}_{ij} \overline{s_i}}
+Q_{j} = \frac{\sum_i Q_{ij} \overline{s_i}}
 {\sum_i \overline{s_i}}
 \end{equation}
 
@@ -453,16 +453,16 @@ FNC handles this by keeping track of $l$ different feature-action reward
 estimates, and only updating estimates on each time step for which it
 has a non-null reward.
 \begin{equation}
-\hat{r}_{ijk, t} = \hat{r}_{ijk, t-1} + \alpha
+Q_{ijk, t} = Q_{ijk, t-1} + \alpha
 (\overline{\overline{s_i}, a_j})_t
-(r_{k,t} - \hat{r}_{ijk, t-1})
+(r_{k,t} - Q_{ijk, t-1})
 \end{equation}
 When it comes time to predict the reward associated
 with each action for the next time step, it makes a prediction for each
 reward channel individually, with a weighted average as in the method above,
 and then it sums the predicted reward across all reward sources.
 \begin{equation}
-\hat{r}_{j} = \sum_k \left ( \frac{\sum_i \hat{r}_{ijk} \overline{s_i}}
+Q_{j} = \sum_k \left ( \frac{\sum_i Q_{ijk} \overline{s_i}}
 {\sum_i \overline{s_i}} \right )
 \end{equation}
 

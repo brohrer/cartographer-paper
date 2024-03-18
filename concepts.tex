@@ -6,7 +6,7 @@
 
 To set the stage, the Naive Cartographer falls into
 a category of machine learning
-called reinforcement learning (RL). An RL algorithm learns to take actions
+called reinforcement learning (RL). A RL algorithm learns to take actions
 that lead to rewards and avoid actions that lead to bad experiences,
 much like a toddler learns to prefer cookies over brussel sprouts
 through trial and error. This is distinct from the other two main
@@ -14,14 +14,14 @@ branches of machine learning: supervised learning, such as algorithms
 that learn to detect fraudulent charges on our credit cards,
 and unsupervised learning, such as might be used to group tracks
 into genres in a music catalog. The favored reference in the field by
-Sutton and Barto is freely available in
-\href{http://incompleteideas.net/book/RLbook2020.pdf}{pdf}
-.~\footnote{Sutton, R. S., and Barto, A. G. (2020) Reinforcement Learning:
+Sutton and Barto is freely available
+in \href{http://incompleteideas.net/book/RLbook2020.pdf}{pdf}
+.\footnote{Sutton, R. S., and Barto, A. G. (2020) Reinforcement Learning:
 An Introduction, second edition, Westchester Publishing Service.
 http://incompleteideas.net/book/RLbook2020.pdf }
 I'll be mimicking their notation here.
 
-A single pass of an RL algorithm looks something like
+A single pass of a RL algorithm looks something like
 \begin{enumerate}
   \item{See a cookie. (Sense the state of the world, $s$.)}
   \item{Eat the cookie. (Take an action, $a$.)}
@@ -36,7 +36,7 @@ turns it off.
 \subsection{Value function}
 \label{subsec:introvaluefunction}
 The thing that makes RL algorithms useful is that after a while they
-get good at choosing which action to take that will bring the most reward.
+get good at knowing which action will bring the most reward.
 After trying a cookie and a brussel sprout a couple of times,
 a clear pattern will emerge. Then, when presented with the state $s$ of
 ``See a brussel sprout and a cookie" the algorithm will have the option
@@ -48,7 +48,9 @@ the brussel sprout.
 The way this accumulated state-action-reward experience is represented
 is a value function. For every possible state, and for every possible action
 in each of those states, the value function is the reward that is expected.
-It is typically written as $Q(s, a)$. Once a RL algorithm has learned the
+It is typically written as $Q(s, a)$ when it is looking ahead to include
+all anticipated rewards in the next few time steps, and $r(s, a)$ when considering
+only the immediate result of the current time step. Once a RL algorithm has learned the
 value function well, it can always make the choice that leads
 to the highest reward. It need never eat another brussel sprout again.
 
@@ -59,7 +61,8 @@ to the highest reward. It need never eat another brussel sprout again.
 An important distinction among RL algorithms is whether they require their
 states and actions to be \textbf{discrete} (that is, you could write
 them out in a list if you wanted to) or whether they can handle
-\textbf{continuous}. The cookie/brussel sprout example is discrete.
+\textbf{continuous} state variables and action outputs.
+The cookie/brussel sprout example is discrete.
 It's easy to list out all possible states
 \begin{itemize}
   \item{See cookie}
@@ -116,18 +119,18 @@ See neither & NA & NA & NA & 0 \\
 
 
 FNC is a tabular approach, so it does represent the world as discrete.
-However it can also be used with continuous state spaces too thanks
+However it can also be used with continuous state spaces too, thanks
 to the cheat of binning.
 
 \subsection{Exploration}
 \label{subsec:introexploration}
 
-When an RL algorithm first starts out, it doesn't have a good value function.
+When a RL algorithm first starts out, it doesn't have a good value function.
 That only happens through trial and error. After a short time, it learns
 some of the value function, enough to get by, but most of it is still unknown.
 You may have experienced this when choosing what to eat at a restaurant.
 
-In this scenario you are the RL algorithm also known as the
+In this scenario you are the RL algorithm, also known as the
 \textbf{agent}---the entity responsible for deciding what to do next.
 Your current state $s$ is “staring at a menu”. Your function is to
 choose an item to order and eat. For instance, one of your potential
@@ -148,7 +151,7 @@ also be gross.
 Learning your favorite items on a menu is hard enough, but it's even
 harder when the world changes---when seasonal menu rotations kick in or
 there is a Portabella mushroom shortage or the management turns over and starts
-cutting costs. There is a real danger that the value function you
+cutting costs with cheap cheese. There is a real danger that the value function you
 learned becomes outdated and inaccurate. Your favorite dish might get
 pulled from the menu or re-imagined by an ambitious chef. A world that
 refuses to stay the same is considered \textbf{nonstationary} in RL terms,
@@ -217,7 +220,7 @@ This is the concept behind model-based RL.
 Typically the RL agent doesn't have it quite this easy. It has to be
 its own cartographer, keeping track of its past experiences and stitching
 them together into a picture of the landscape. The person looking for the
-grocery store would note that, starting from the bookstore and going
+grocery store would note that starting from the bookstore and going
 north lands them at the bank. Going east from there lands them at the
 coffee shop. And then going north again gets them to the grocery store.
 This can be represented as state-action-state transitions, $(s, a, s^\prime)$.
@@ -304,19 +307,19 @@ Notably, FNC does not contain a planner. It is a model
 and value function learner, but it relies on another component to do
 the planning and goal setting. The details for what a FNC-complementary
 planner needs to do, together with some examples, will be given in
-the Algorithm section to follow. 
+the Architecture section to follow. 
 
 \subsection{Intermittent reward}
 \label{subsec:introintermittent}
 
 The default assumption of the reinforcement learning problem is that there is
-a reward signal available at every time step. Each pass through the sense-learn-act
+a reward signal available at every time step. On each pass through the sense-learn-act
 cycle the reinforcement learning agent has some basis for updating its
 value function. This is a reasonable assumption when reward is a function of
 sensor information. When a child eats an orange slice, the reward is sensed directly
 through hard-wired circuits in the brain.
 When a robot reaches its charging station, it can collect the reward that has
-been explicitly tied to getting recharged. When a child falls down the negative
+been explicitly tied to getting recharged. When a child falls down, the negative
 rewards of pain and frustration are associated with a host of physical experiences
 that it can sense directly. When a robot has a negative reward associated with
 exceeding an electrical current limit, it can be confident that it will never
@@ -361,27 +364,26 @@ sensors---a signal provided by a human, some external process, or agent,
 or even some odd state
 that the robot can’t sense directly. External rewards can easily be intermittent,
 and in many cases it may be useful to assume a default of no reward information,
-rather than a reward of zero as is customary.
-
+rather than a reward of zero, as is customary.
 
 \subsection{Naive Bayes}
 \label{subsec:intronaivebayes}
 
 There's a famous gotcha in tabular RL, the ominously named
 Curse of Dimensionality. It comes from the fact that the state of
-an agent in their environment includes all of the sensor information
-and everything that's known about both. On a chess board if you move
-one pawn, it's in an entirely new state. If a robot moves one finger,
+an agent in their environment includes all of the sensor information,
+everything that's known about both the robot and its world. In chess if you move
+one pawn, the board is in an entirely new state. If a robot moves one finger,
 it's in a new state. If you change one pixel in the camera of a
 computer vision agent, it's a new state. The list of states becomes
 unfathomably long for all but very simple environments.
 
 The most common way to handle this is with some type of approximation
 where the agent extends what it learns about one state to similar states,
-and doesn't have to experience every individual variation.
-It's a form of generalization. It works well for a lot of applications.
+so it doesn't have to experience every individual variation.
+It's a form of generalization, and it works well for a lot of applications.
 If you've watched simulated two-legged robots wobble around,
-you've seen it at work.
+you've seen it in action.
 
 There's another alternative that I haven't seen anyone try yet,
 which is to handle each of the features separately, instead of combinatorially.
